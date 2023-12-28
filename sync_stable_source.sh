@@ -21,7 +21,7 @@ else
   osc -A https://api.opensuse.org checkout ${PROJECT}/${PACKAGE}
 fi
 
-NUM_SOURCES=$(grep "^Source" ${PROJECT}/${PACKAGE}/*.spec | wc -l)
+NUM_SOURCES=$(grep "^Source0:" ${PROJECT}/${PACKAGE}/*.spec | wc -l)
 if [ ${NUM_SOURCES} -ne 1 ]; then
   echo "Error only one Source file supported"
   exit 1
@@ -30,7 +30,7 @@ TARGET_SOURCE=$(grep "^Source" ${PROJECT}/${PACKAGE}/*.spec)
 TARGET_URL=$(echo ${TARGET_SOURCE} | awk '{print $2}')
 
 # Update the source from upstream
-REQ_NAME=$(echo ${PACKAGE} | sed 's/python-//g')
+REQ_NAME=$(echo ${PACKAGE} | sed 's/^python-//g' | sed 's/^openstack-//')
 echo "REQ_NAME=${REQ_NAME}"
 STABLE_VERSION=${STABLE_VERSION:-2023.2}
 MINOR_VERSION=${MINOR_VERSION:-0}
@@ -42,8 +42,8 @@ if [ "${TARGET_URL}" == "${STABLE_TARBALL}" ]; then
   exit 0
 fi
 
-if ! curl -sSf https://opendev.org/openstack/cliff/src/branch/stable/${STABLE_VERSION} > /dev/null; then
-  echo "https://opendev.org/openstack/cliff/src/branch/stable/${STABLE_VERSION}" | tee -a ${PROJECT}/failures.txt
+if ! curl -sSfI ${STABLE_URL}; then
+  echo "${STABLE_URL}" | tee -a ${PROJECT}/failures.txt
   exit 1
 fi
 
